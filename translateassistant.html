@@ -1,0 +1,2735 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 小说翻译与整理助手</title>
+    <!-- 引入 Encoding.js 用于 ANSI(GBK) 格式导出 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/encoding-japanese/2.0.0/encoding.min.js"></script>
+    <style>
+        /* CSS 变量定义 - 主题配色方案 */
+        :root {
+            /* 1. 日间明亮 (Light Modern) */
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --bg-card: rgba(255, 255, 255, 0.88);
+            --bg-header: rgba(255, 255, 255, 0.82);
+            --bg-sidebar: rgba(248, 250, 252, 0.88);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: rgba(226, 232, 240, 0.85);
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --shelf-wood: linear-gradient(180deg, #965a3e 0%, #6d3e2a 70%, #4a2717 100%);
+            --shelf-shadow: rgba(30, 15, 8, 0.5);
+            --editor-bg: rgba(255, 255, 255, 0.92);
+            --shadow-color: rgba(0, 0, 0, 0.08);
+
+            /* 滚动条适配变量 */
+            --scrollbar-thumb: rgba(59, 130, 246, 0.35);
+            --scrollbar-thumb-hover: rgba(59, 130, 246, 0.65);
+            --scrollbar-track: rgba(0, 0, 0, 0.03);
+
+            /* 背景流变颜色 */
+            --bg-color-1: #e0f2fe;
+            --bg-color-2: #f0f9ff;
+            --bg-color-3: #fae8ff;
+            --bg-color-4: #f1f5f9;
+            --star-color: rgba(59, 130, 246, 0.6);
+
+            /* 月历打卡热力色阶 */
+            --cal-empty: rgba(255, 255, 255, 0.6);
+            --cal-border: #cbd5e1;
+            --cal-level-1: #86efac; /* 1-3000字 浅深 */
+            --cal-level-2: #22c55e; /* 3001-6000字 介于深浅 */
+            --cal-level-3: #15803d; /* 6000字以上 深色 */
+        }
+
+        /* 2. 墨绿夜间 (Deep Emerald) */
+        body[data-theme="emerald"] {
+            --glass-bg: rgba(6, 23, 18, 0.78);
+            --glass-border: rgba(16, 185, 129, 0.25);
+            --bg-card: rgba(12, 35, 28, 0.88);
+            --bg-header: rgba(5, 19, 15, 0.88);
+            --bg-sidebar: rgba(6, 23, 18, 0.92);
+            --text-main: #ecfdf5;
+            --text-muted: #6ee7b7;
+            --border-color: rgba(27, 61, 50, 0.85);
+            --accent-color: #10b981;
+            --accent-hover: #059669;
+            --shelf-wood: linear-gradient(180deg, #1b4d3e 0%, #103328 70%, #071f18 100%);
+            --shelf-shadow: rgba(0, 0, 0, 0.7);
+            --editor-bg: rgba(10, 31, 24, 0.92);
+            --shadow-color: rgba(0, 0, 0, 0.45);
+
+            --scrollbar-thumb: rgba(16, 185, 129, 0.35);
+            --scrollbar-thumb-hover: rgba(16, 185, 129, 0.65);
+            --scrollbar-track: rgba(0, 0, 0, 0.2);
+
+            --bg-color-1: #064e3b;
+            --bg-color-2: #022c22;
+            --bg-color-3: #065f46;
+            --bg-color-4: #0f172a;
+            --star-color: rgba(52, 211, 153, 0.8);
+
+            --cal-empty: rgba(20, 45, 35, 0.5);
+            --cal-border: #1b3d32;
+            --cal-level-1: #34d399;
+            --cal-level-2: #10b981;
+            --cal-level-3: #047857;
+        }
+
+        /* 3. 樱花浪漫粉 (Sakura Pink) */
+        body[data-theme="sakura"] {
+            --glass-bg: rgba(255, 255, 255, 0.78);
+            --glass-border: rgba(244, 114, 182, 0.35);
+            --bg-card: rgba(255, 255, 255, 0.9);
+            --bg-header: rgba(255, 241, 242, 0.88);
+            --bg-sidebar: rgba(253, 242, 248, 0.88);
+            --text-main: #831843;
+            --text-muted: #9d174d;
+            --border-color: rgba(251, 207, 232, 0.85);
+            --accent-color: #ec4899;
+            --accent-hover: #db2777;
+            --shelf-wood: linear-gradient(180deg, #b06286 0%, #8c3e62 70%, #5f203f 100%);
+            --shelf-shadow: rgba(80, 20, 50, 0.4);
+            --editor-bg: rgba(255, 255, 255, 0.94);
+            --shadow-color: rgba(236, 72, 153, 0.15);
+
+            --scrollbar-thumb: rgba(236, 72, 153, 0.35);
+            --scrollbar-thumb-hover: rgba(236, 72, 153, 0.65);
+            --scrollbar-track: rgba(255, 241, 242, 0.3);
+
+            --bg-color-1: #fce7f3;
+            --bg-color-2: #ffe4e6;
+            --bg-color-3: #fbcfe8;
+            --bg-color-4: #fff1f2;
+            --star-color: rgba(244, 114, 182, 0.8);
+
+            --cal-empty: rgba(255, 255, 255, 0.6);
+            --cal-border: #fbcfe8;
+            --cal-level-1: #f9a8d4;
+            --cal-level-2: #f43f5e;
+            --cal-level-3: #be123c;
+        }
+
+        /* 4. 复古咖啡 (Warm Coffee/Amber) */
+        body[data-theme="coffee"] {
+            --glass-bg: rgba(30, 20, 15, 0.82);
+            --glass-border: rgba(217, 119, 6, 0.3);
+            --bg-card: rgba(43, 27, 18, 0.9);
+            --bg-header: rgba(24, 14, 9, 0.92);
+            --bg-sidebar: rgba(30, 18, 12, 0.92);
+            --text-main: #fef3c7;
+            --text-muted: #fde68a;
+            --border-color: rgba(120, 53, 15, 0.65);
+            --accent-color: #d97706;
+            --accent-hover: #b45309;
+            --shelf-wood: linear-gradient(180deg, #6e3d23 0%, #4d2713 70%, #2e1305 100%);
+            --shelf-shadow: rgba(0, 0, 0, 0.6);
+            --editor-bg: rgba(35, 22, 15, 0.92);
+            --shadow-color: rgba(0, 0, 0, 0.5);
+
+            --scrollbar-thumb: rgba(217, 119, 6, 0.35);
+            --scrollbar-thumb-hover: rgba(217, 119, 6, 0.65);
+            --scrollbar-track: rgba(0, 0, 0, 0.25);
+
+            --bg-color-1: #451a03;
+            --bg-color-2: #281205;
+            --bg-color-3: #78350f;
+            --bg-color-4: #1c0a00;
+            --star-color: rgba(251, 191, 36, 0.8);
+
+            --cal-empty: rgba(45, 30, 20, 0.5);
+            --cal-border: #78350f;
+            --cal-level-1: #fcd34d;
+            --cal-level-2: #f59e0b;
+            --cal-level-3: #b45309;
+        }
+
+        /* 5. 极光幻采紫 (Aurora Purple) */
+        body[data-theme="aurora"] {
+            --glass-bg: rgba(24, 16, 48, 0.82);
+            --glass-border: rgba(168, 85, 247, 0.35);
+            --bg-card: rgba(35, 24, 68, 0.88);
+            --bg-header: rgba(18, 12, 38, 0.92);
+            --bg-sidebar: rgba(25, 17, 50, 0.92);
+            --text-main: #f3e8ff;
+            --text-muted: #c084fc;
+            --border-color: rgba(88, 28, 135, 0.75);
+            --accent-color: #a855f7;
+            --accent-hover: #9333ea;
+            --shelf-wood: linear-gradient(180deg, #5b2170 0%, #3e124d 70%, #24072f 100%);
+            --shelf-shadow: rgba(0, 0, 0, 0.6);
+            --editor-bg: rgba(28, 19, 56, 0.92);
+            --shadow-color: rgba(0, 0, 0, 0.48);
+
+            --scrollbar-thumb: rgba(168, 85, 247, 0.35);
+            --scrollbar-thumb-hover: rgba(168, 85, 247, 0.65);
+            --scrollbar-track: rgba(0, 0, 0, 0.25);
+
+            --bg-color-1: #2e1065;
+            --bg-color-2: #1e1b4b;
+            --bg-color-3: #581c87;
+            --bg-color-4: #0f172a;
+            --star-color: rgba(192, 132, 252, 0.8);
+
+            --cal-empty: rgba(35, 25, 60, 0.5);
+            --cal-border: #581c87;
+            --cal-level-1: #e9d5ff;
+            --cal-level-2: #c084fc;
+            --cal-level-3: #7e22ce;
+        }
+
+        /* 6. 深海梦幻蓝 (Deep Sea Blue) */
+        body[data-theme="deepsea"] {
+            --glass-bg: rgba(15, 23, 42, 0.82);
+            --glass-border: rgba(56, 189, 248, 0.3);
+            --bg-card: rgba(15, 30, 55, 0.88);
+            --bg-header: rgba(10, 18, 35, 0.92);
+            --bg-sidebar: rgba(12, 22, 42, 0.92);
+            --text-main: #e0f2fe;
+            --text-muted: #38bdf8;
+            --border-color: rgba(30, 58, 138, 0.75);
+            --accent-color: #0ea5e9;
+            --accent-hover: #0284c7;
+            --shelf-wood: linear-gradient(180deg, #1b4965 0%, #0f2e42 70%, #081a26 100%);
+            --shelf-shadow: rgba(0, 0, 0, 0.6);
+            --editor-bg: rgba(13, 27, 48, 0.92);
+            --shadow-color: rgba(0, 0, 0, 0.52);
+
+            --scrollbar-thumb: rgba(14, 165, 233, 0.35);
+            --scrollbar-thumb-hover: rgba(14, 165, 233, 0.65);
+            --scrollbar-track: rgba(0, 0, 0, 0.25);
+
+            --bg-color-1: #0f172a;
+            --bg-color-2: #1e3a8a;
+            --bg-color-3: #0284c7;
+            --bg-color-4: #0369a1;
+            --star-color: rgba(56, 189, 248, 0.8);
+
+            --cal-empty: rgba(20, 35, 60, 0.5);
+            --cal-border: #1e3a8a;
+            --cal-level-1: #7dd3fc;
+            --cal-level-2: #0284c7;
+            --cal-level-3: #0369a1;
+        }
+
+        /* 7. 赛博朋克霓虹 (Cyberpunk Neon) */
+        body[data-theme="cyberpunk"] {
+            --glass-bg: rgba(20, 10, 30, 0.85);
+            --glass-border: rgba(255, 0, 128, 0.4);
+            --bg-card: rgba(26, 15, 38, 0.9);
+            --bg-header: rgba(15, 8, 25, 0.92);
+            --bg-sidebar: rgba(20, 10, 32, 0.92);
+            --text-main: #00f0ff;
+            --text-muted: #ff007f;
+            --border-color: rgba(255, 0, 128, 0.5);
+            --accent-color: #ff007f;
+            --accent-hover: #d6006b;
+            --shelf-wood: linear-gradient(180deg, #4d004d 0%, #2b0030 70%, #15001a 100%);
+            --shelf-shadow: rgba(255, 0, 128, 0.3);
+            --editor-bg: rgba(18, 8, 28, 0.94);
+            --shadow-color: rgba(255, 0, 128, 0.25);
+
+            --scrollbar-thumb: rgba(255, 0, 127, 0.4);
+            --scrollbar-thumb-hover: rgba(0, 240, 255, 0.7);
+            --scrollbar-track: rgba(0, 0, 0, 0.3);
+
+            --bg-color-1: #1a0033;
+            --bg-color-2: #330033;
+            --bg-color-3: #001a33;
+            --bg-color-4: #0a0015;
+            --star-color: rgba(0, 240, 255, 0.9);
+
+            --cal-empty: rgba(30, 15, 40, 0.5);
+            --cal-border: rgba(255, 0, 128, 0.4);
+            --cal-level-1: #ff66c4;
+            --cal-level-2: #ff007f;
+            --cal-level-3: #00f0ff;
+        }
+
+        /* 8. 落日暖橘 (Sunset Orange) */
+        body[data-theme="sunset"] {
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(249, 115, 22, 0.35);
+            --bg-card: rgba(255, 255, 255, 0.92);
+            --bg-header: rgba(254, 243, 199, 0.88);
+            --bg-sidebar: rgba(255, 247, 237, 0.9);
+            --text-main: #7c2d12;
+            --text-muted: #c2410c;
+            --border-color: rgba(253, 186, 116, 0.8);
+            --accent-color: #f97316;
+            --accent-hover: #ea580c;
+            --shelf-wood: linear-gradient(180deg, #9a431c 0%, #6e2a0e 70%, #461705 100%);
+            --shelf-shadow: rgba(124, 45, 18, 0.4);
+            --editor-bg: rgba(255, 255, 255, 0.95);
+            --shadow-color: rgba(249, 115, 22, 0.15);
+
+            --scrollbar-thumb: rgba(249, 115, 22, 0.35);
+            --scrollbar-thumb-hover: rgba(249, 115, 22, 0.65);
+            --scrollbar-track: rgba(0, 0, 0, 0.03);
+
+            --bg-color-1: #ffedd5;
+            --bg-color-2: #fef3c7;
+            --bg-color-3: #fed7aa;
+            --bg-color-4: #fff7ed;
+            --star-color: rgba(249, 115, 22, 0.8);
+
+            --cal-empty: rgba(255, 255, 255, 0.6);
+            --cal-border: #fdba74;
+            --cal-level-1: #ff2d00;
+            --cal-level-2: #ea580c;
+            --cal-level-3: #9a3412;
+        }
+
+        /* 9. 薄荷清新 (Mint Breeze) */
+        body[data-theme="mint"] {
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(20, 184, 166, 0.35);
+            --bg-card: rgba(255, 255, 255, 0.92);
+            --bg-header: rgba(204, 251, 241, 0.88);
+            --bg-sidebar: rgba(240, 253, 250, 0.9);
+            --text-main: #134e4a;
+            --text-muted: #0d9488;
+            --border-color: rgba(153, 246, 228, 0.85);
+            --accent-color: #14b8a6;
+            --accent-hover: #0d9488;
+            --shelf-wood: linear-gradient(180deg, #1d6a63 0%, #114b46 70%, #0a2f2c 100%);
+            --shelf-shadow: rgba(19, 78, 74, 0.4);
+            --editor-bg: rgba(255, 255, 255, 0.95);
+            --shadow-color: rgba(20, 184, 166, 0.15);
+
+            --scrollbar-thumb: rgba(20, 184, 166, 0.35);
+            --scrollbar-thumb-hover: rgba(20, 184, 166, 0.65);
+            --scrollbar-track: rgba(0, 0, 0, 0.03);
+
+            --bg-color-1: #ccfbf1;
+            --bg-color-2: #e0f2fe;
+            --bg-color-3: #a7f3d0;
+            --bg-color-4: #f0fdfa;
+            --star-color: rgba(20, 184, 166, 0.8);
+
+            --cal-empty: rgba(255, 255, 255, 0.6);
+            --cal-border: #99f6e4;
+            --cal-level-1: #5eead4;
+            --cal-level-2: #0d9488;
+            --cal-level-3: #115e59;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+            color: var(--text-main); 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden; 
+            transition: color 0.4s ease;
+            position: relative;
+        }
+
+        /* ================= 滚动条全局美化适配 ================= */
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--scrollbar-track);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb);
+            border-radius: 4px;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--scrollbar-thumb-hover);
+        }
+        ::-webkit-scrollbar-corner {
+            background: transparent;
+        }
+
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+        }
+
+        ::selection {
+            background: var(--accent-color);
+            color: #ffffff;
+        }
+
+        /* ================= 动态背景渲染引擎 ================= */
+        .ambient-wallpaper {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: -1;
+            overflow: hidden;
+            background: var(--bg-color-4);
+            transition: background 0.5s ease;
+        }
+
+        /* 全局全屏低不透明度放大封面浮现底图背景 */
+        .shelf-global-bg-cover {
+            position: absolute;
+            top: -10%; left: -10%; width: 120%; height: 120%;
+            background-size: cover;
+            background-position: center;
+            filter: blur(28px) brightness(0.9);
+            opacity: 0;
+            transform: scale(1.15);
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .shelf-global-bg-cover.active {
+            opacity: 0.22;
+            transform: scale(1);
+        }
+
+        .bg-style-mesh .mesh-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.75;
+            animation: meshFloat 18s infinite alternate ease-in-out;
+            transition: background 0.8s ease;
+            display: block;
+        }
+        .bg-style-mesh .blob-1 { width: 50vw; height: 50vw; top: -10vw; left: -10vw; background: var(--bg-color-1); animation-duration: 20s; }
+        .bg-style-mesh .blob-2 { width: 45vw; height: 45vw; bottom: -10vw; right: -5vw; background: var(--bg-color-2); animation-duration: 25s; animation-delay: -5s; }
+        .bg-style-mesh .blob-3 { width: 40vw; height: 40vw; top: 25vw; left: 30vw; background: var(--bg-color-3); animation-duration: 22s; animation-delay: -10s; }
+
+        @keyframes meshFloat {
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            33% { transform: translate(10%, 15%) scale(1.1) rotate(120deg); }
+            66% { transform: translate(-10%, 5%) scale(0.9) rotate(240deg); }
+            100% { transform: translate(5%, -15%) scale(1.05) rotate(360deg); }
+        }
+
+        .bg-style-starry {
+            background: radial-gradient(ellipse at bottom, var(--bg-color-1) 0%, var(--bg-color-4) 100%);
+        }
+        .bg-style-starry .star-layer {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, var(--star-color), rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 40px 70px, var(--star-color), rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 90px 40px, var(--star-color), rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 160px 120px, var(--star-color), rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 230px 190px, var(--star-color), rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 310px 80px, var(--star-color), rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 350px 350px;
+            opacity: 0.7;
+            animation: starTwinkle 4s ease-in-out infinite alternate;
+        }
+        @keyframes starTwinkle {
+            0% { opacity: 0.3; transform: scale(0.98); }
+            100% { opacity: 0.85; transform: scale(1.02); }
+        }
+
+        .bg-style-aurora-wave {
+            background: linear-gradient(135deg, var(--bg-color-4), var(--bg-color-2));
+        }
+        .bg-style-aurora-wave .aurora-wave {
+            position: absolute;
+            width: 200%; height: 200%;
+            top: -50%; left: -50%;
+            background: radial-gradient(circle, var(--bg-color-1) 0%, transparent 60%),
+                        radial-gradient(circle at 80% 20%, var(--bg-color-3) 0%, transparent 50%);
+            opacity: 0.5;
+            filter: blur(60px);
+            animation: auroraRotate 25s linear infinite;
+        }
+        @keyframes auroraRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .bg-style-minimal {
+            background: linear-gradient(180deg, var(--bg-color-1) 0%, var(--bg-color-2) 50%, var(--bg-color-4) 100%);
+            transition: background 0.8s ease;
+        }
+
+        .bg-style-grid {
+            background-color: var(--bg-color-4);
+            background-image: radial-gradient(var(--star-color) 1px, transparent 1px);
+            background-size: 24px 24px;
+            opacity: 0.9;
+        }
+
+        .wallpaper-element { display: none; }
+        .bg-style-mesh .mesh-blob { display: block; }
+        .bg-style-starry .star-layer { display: block; }
+        .bg-style-aurora-wave .aurora-wave { display: block; }
+
+        /* ================= 页面结构样式 ================= */
+
+        .header { 
+            position: absolute; top: 0; left: 0; right: 0; height: 54px; 
+            background: var(--bg-header); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: var(--text-main); 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 0 24px; z-index: 10; 
+            border-bottom: 1px solid var(--border-color); 
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+        .header-title { font-weight: 700; font-size: 16px; display: flex; align-items: center; gap: 10px; }
+        .header-actions { display: flex; gap: 10px; align-items: center; }
+
+        .btn { padding: 6px 14px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-primary { background: var(--accent-color); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn-secondary { background: var(--glass-bg); color: var(--text-main); border-color: var(--border-color); }
+        .btn-secondary:hover { background: var(--bg-card); transform: translateY(-1px); }
+        .btn-danger { background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+        .btn-danger:hover { background: #ef4444; color: #fff; }
+        .btn-warning { background: #f59e0b; color: #fff; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3); }
+        .btn-warning:hover { background: #d97706; }
+        .btn-icon { background: none; color: inherit; border: none; cursor: pointer; padding: 4px 6px; border-radius: 4px; transition: 0.2s; }
+        .btn-icon:hover { background: rgba(255,255,255,0.2); }
+
+        .select-control {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--glass-bg);
+            color: var(--text-main);
+            font-size: 12px;
+            cursor: pointer;
+            outline: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .view-container { margin-top: 54px; width: 100%; height: calc(100vh - 54px); display: flex; position: relative; }
+
+        /* --- 动态书柜与拟真 3D 视觉建模界面 --- */
+        #bookshelf-view { 
+            width: 100%; height: 100%; padding: 30px 40px; overflow-y: auto; 
+            display: flex; flex-direction: column; align-items: center; 
+            position: relative; z-index: 1;
+        }
+        .shelf-container { width: 100%; max-width: 1100px; }
+        .shelf-header-title { text-align: center; margin-bottom: 25px; font-weight: 300; font-size: 26px; letter-spacing: 1.5px; }
+        
+        /* 3D 仿真书架构造 */
+        .shelf-3d-wrapper {
+            position: relative;
+            margin-bottom: 40px;
+            perspective: 1200px;
+        }
+        .shelf { 
+            background: var(--shelf-wood); 
+            padding: 30px 30px 20px 30px; 
+            border-radius: 8px 8px 4px 4px; 
+            box-shadow: inset 0 3px 8px rgba(255,255,255,0.2), inset 0 -6px 15px rgba(0,0,0,0.6), 0 20px 40px var(--shadow-color); 
+            display: flex; flex-wrap: wrap; gap: 38px 28px; min-height: 270px; 
+            align-items: flex-end; position: relative; z-index: 2;
+        }
+        /* 书架 3D 厚度搁板 */
+        .shelf-plank {
+            height: 18px;
+            background: linear-gradient(90deg, rgba(0,0,0,0.3), rgba(255,255,255,0.1) 50%, rgba(0,0,0,0.3)), var(--shelf-wood);
+            border-top: 2px solid rgba(255,255,255,0.25);
+            box-shadow: 0 12px 25px var(--shelf-shadow);
+            border-radius: 0 0 6px 6px;
+            position: relative;
+        }
+        .shelf-plank::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: rgba(0,0,0,0.35);
+        }
+        
+        /* 拟真 3D 书籍包装卡片组件 */
+        .book-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .book-card-3d { 
+            width: 135px; height: 195px; 
+            border-radius: 3px 8px 8px 3px; 
+            box-shadow: -4px 0 8px rgba(0,0,0,0.3), 8px 12px 22px rgba(0,0,0,0.35); 
+            cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; 
+            padding: 12px; color: #fff; 
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); 
+            transform-style: preserve-3d;
+            transform-origin: bottom center; position: relative; 
+            overflow: hidden;
+            background-color: #2b3a4a;
+        }
+
+        /* 实体书封面图背景遮罩 */
+        .book-cover-img {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: 1; border-radius: 3px 8px 8px 3px;
+            transition: transform 0.5s ease;
+        }
+
+        /* 3D 浮空流畅动画与阴影增强 */
+        .book-wrapper:hover .book-card-3d { 
+            transform: translateY(-22px) rotateX(12deg) rotateY(-8deg) scale(1.06); 
+            box-shadow: -10px 20px 35px rgba(0,0,0,0.5), 0 30px 45px rgba(0,0,0,0.3); 
+        }
+        .book-wrapper:hover .book-cover-img {
+            transform: scale(1.06);
+        }
+
+        /* 实体书侧书脊与立体折光 */
+        .book-spine-3d { 
+            position: absolute; left: 0; top: 0; bottom: 0; width: 12px; 
+            background: linear-gradient(90deg, rgba(255,255,255,0.35) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.4) 100%); 
+            z-index: 3; border-radius: 3px 0 0 3px; 
+        }
+        .book-shading {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.5) 100%);
+            z-index: 2; pointer-events: none;
+        }
+
+        .book-content-layer {
+            position: relative; z-index: 4; height: 100%;
+            display: flex; flex-direction: column; justify-content: space-between;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .book-title { 
+            font-weight: 700; font-size: 14px; word-break: break-all; line-height: 1.4; 
+            margin-left: 8px; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; 
+            overflow: hidden; letter-spacing: 0.5px;
+        }
+        .book-meta { font-size: 11px; opacity: 0.9; margin-left: 8px; background: rgba(0,0,0,0.45); padding: 2px 6px; border-radius: 4px; backdrop-filter: blur(4px); width: fit-content; }
+        
+        /* 封面下方居中的成品总字数标示 */
+        .book-word-count-badge {
+            margin-top: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-align: center;
+            background: var(--glass-bg);
+            padding: 3px 10px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            backdrop-filter: blur(6px);
+            width: 100%;
+            white-space: nowrap;
+        }
+
+        .book-actions-overlay {
+            position: absolute; top: 6px; right: 6px; z-index: 5; display: flex; gap: 4px;
+            opacity: 0; transition: opacity 0.2s ease;
+        }
+        .book-wrapper:hover .book-actions-overlay { opacity: 1; }
+        .action-btn-mini { background: rgba(0,0,0,0.65); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; padding: 3px 6px; font-size: 11px; cursor: pointer; transition: 0.2s; }
+        .action-btn-mini:hover { background: rgba(0,0,0,0.9); transform: scale(1.08); }
+
+        .add-book-card { 
+            width: 135px; height: 195px; 
+            border: 2px dashed var(--border-color); 
+            background: var(--glass-bg);
+            border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            color: var(--text-muted); cursor: pointer; transition: 0.25s ease; backdrop-filter: blur(6px);
+        }
+        .add-book-card:hover { border-color: var(--accent-color); color: var(--accent-color); transform: translateY(-8px); box-shadow: 0 10px 20px var(--shadow-color); }
+
+        /* --- 4. 扁平化统计月历 (万年历热力图) --- */
+        .calendar-section {
+            width: 100%;
+            max-width: 1100px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 8px 24px var(--shadow-color);
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .calendar-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .calendar-title {
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        /* 滚轮式万年历控制器 */
+        .wheel-picker-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            padding: 2px 8px;
+            border-radius: 6px;
+            user-select: none;
+        }
+        .wheel-box {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent-color);
+            padding: 2px 6px;
+            cursor: ns-resize;
+            border-radius: 4px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .wheel-box:hover {
+            background: rgba(0,0,0,0.06);
+        }
+
+        .calendar-legend {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        .legend-box { width: 11px; height: 11px; border-radius: 2px; }
+
+        /* 扁平化小巧精致网格 */
+        .calendar-grid-container {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        .cal-weekday {
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            padding-bottom: 4px;
+        }
+        .cal-day-cell {
+            aspect-ratio: 1.1;
+            max-height: 38px;
+            border-radius: 4px;
+            border: 1px solid var(--cal-border);
+            background: var(--cal-empty);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 500;
+            position: relative;
+            transition: all 0.2s ease;
+            cursor: default;
+        }
+        .cal-day-cell.other-month {
+            opacity: 0.25;
+            border-style: dashed;
+        }
+        .cal-day-cell.today {
+            border-color: var(--accent-color) !important;
+            border-width: 2px;
+            font-weight: 800;
+        }
+        .cal-day-cell .day-num { font-size: 11px; line-height: 1; }
+        .cal-day-cell .word-cnt { font-size: 9px; opacity: 0.85; transform: scale(0.85); line-height: 1; margin-top: 2px; }
+
+        /* 色阶类名 */
+        .cal-day-cell.lvl-1 { background: var(--cal-level-1) !important; color: #000 !important; border-color: transparent !important; }
+        .cal-day-cell.lvl-2 { background: var(--cal-level-2) !important; color: #fff !important; border-color: transparent !important; }
+        .cal-day-cell.lvl-3 { background: var(--cal-level-3) !important; color: #fff !important; border-color: transparent !important; }
+
+        .cal-day-cell:hover:not(.other-month) {
+            transform: scale(1.12);
+            z-index: 5;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* --- 翻译主工作台视图 --- */
+        #workspace-view { display: none; width: 100%; height: 100%; }
+
+        .sidebar { 
+            width: 290px; background: var(--bg-sidebar); 
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            color: var(--text-main); display: flex; flex-direction: column; 
+            border-right: 1px solid var(--border-color); flex-shrink: 0; 
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .sidebar.collapsed {
+            width: 38px !important;
+        }
+        .sidebar-toggle-btn {
+            position: absolute;
+            top: 10px; right: 8px;
+            z-index: 12;
+            padding: 2px 6px;
+            font-size: 11px;
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+        .sidebar-toggle-btn:hover {
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        .sidebar.collapsed .sidebar-toggle-btn {
+            right: 6px;
+        }
+        .sidebar.collapsed .sidebar-inner-content {
+            display: none !important;
+        }
+        .sidebar-uncollapse-bar {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 50px;
+            cursor: pointer;
+            height: 100%;
+            user-select: none;
+        }
+        .sidebar.collapsed .sidebar-uncollapse-bar {
+            display: flex;
+        }
+        .sidebar-uncollapse-text {
+            writing-mode: vertical-rl;
+            letter-spacing: 2px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-top: 12px;
+        }
+
+        .sidebar-inner-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+        }
+
+        .sidebar-tabs { display: flex; border-bottom: 1px solid var(--border-color); padding-right: 40px; }
+        .tab-btn { 
+            flex: 1; padding: 12px; border: none; background: none; 
+            color: var(--text-muted); cursor: pointer; font-size: 13px; font-weight: 700; 
+            border-bottom: 2px solid transparent; transition: 0.2s;
+            white-space: nowrap;
+        }
+        .tab-btn.active { color: var(--accent-color); border-bottom-color: var(--accent-color); background: rgba(255,255,255,0.05); }
+        .sidebar-content { flex: 1; overflow-y: auto; padding: 12px; }
+
+        .vol-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 8px 10px; background: var(--glass-bg); border-radius: 6px; 
+            margin-top: 8px; font-weight: bold; font-size: 13px; cursor: pointer; 
+            border: 1px solid var(--border-color);
+            user-select: none;
+        }
+        .vol-header:hover { background: var(--bg-card); }
+        .vol-title-text {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .vol-toggle-icon {
+            font-size: 10px;
+            transition: transform 0.2s ease;
+            display: inline-block;
+        }
+        .vol-toggle-icon.collapsed {
+            transform: rotate(-90deg);
+        }
+        .chapter-list { list-style: none; padding-left: 10px; margin-top: 4px; transition: max-height 0.25s ease-out; }
+        .chapter-list.collapsed { display: none; }
+        .chapter-item { 
+            padding: 7px 10px; margin: 3px 0; border-radius: 6px; 
+            cursor: pointer; font-size: 13px; display: flex; justify-content: space-between; 
+            align-items: center; color: var(--text-main); transition: 0.2s;
+        }
+        .chapter-item:hover { background: var(--glass-bg); }
+        .chapter-item.active { background: var(--accent-color); color: #fff; }
+
+        .editor-workspace { flex: 1; display: flex; flex-direction: column; position: relative; min-width: 0; }
+        .three-column-container { flex: 1; display: flex; padding: 12px; overflow: hidden; gap: 0; position: relative; }
+        
+        .column { 
+            display: flex; flex-direction: column; 
+            background: var(--bg-card); border-radius: 10px; 
+            border: 1px solid var(--border-color); padding: 14px; 
+            box-shadow: 0 4px 12px var(--shadow-color); backdrop-filter: blur(10px);
+            min-width: 150px;
+            height: 100%;
+        }
+        
+        /* 栏宽度拖拽分割线样式 */
+        .column-resizer {
+            width: 10px;
+            cursor: col-resize;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+            flex-shrink: 0;
+            user-select: none;
+        }
+        .column-resizer::after {
+            content: "";
+            width: 3px;
+            height: 32px;
+            background: var(--border-color);
+            border-radius: 3px;
+            transition: background 0.2s, height 0.2s;
+        }
+        .column-resizer:hover::after, .column-resizer.resizing::after {
+            background: var(--accent-color);
+            height: 48px;
+        }
+
+        .column-header { font-size: 13px; font-weight: bold; color: var(--text-muted); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .column textarea { 
+            flex: 1; width: 100%; border: 1px solid var(--border-color); border-radius: 6px; 
+            padding: 12px; font-size: 14px; line-height: 1.6; resize: none; 
+            background: var(--editor-bg); color: var(--text-main); font-family: inherit; transition: border-color 0.2s;
+        }
+        .column textarea:focus { outline: none; border-color: var(--accent-color); }
+
+        .find-replace-bar {
+            display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+            background: var(--glass-bg); padding: 8px 15px; border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(10px); font-size: 13px;
+        }
+        .find-replace-bar input[type="text"] {
+            padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color);
+            background: var(--editor-bg); color: var(--text-main); font-size: 12px; outline: none;
+        }
+        .find-replace-bar input[type="text"]:focus { border-color: var(--accent-color); }
+
+        .formatted-preview {
+            flex: 1; width: 100%; border: 1px solid var(--border-color); border-radius: 6px;
+            padding: 12px; font-size: 14px; line-height: 1.6; overflow-y: auto;
+            background: var(--editor-bg); color: var(--text-main); outline: none;
+            white-space: pre-wrap; word-break: break-word;
+        }
+        .formatted-preview:focus { border-color: var(--accent-color); }
+        .formatted-preview p { margin-bottom: 0px; }
+        .formatted-preview p.empty-para { height: 1.6em; }
+        .formatted-preview.indent-active p { text-indent: 2em; }
+        .formatted-preview.spacing-active p { margin-bottom: 1em; }
+        
+        mark.search-highlight {
+            background-color: #fef08a; color: #000; padding: 0 2px; border-radius: 2px; font-weight: bold;
+        }
+
+        .editor-footer { 
+            height: 56px; border-top: 1px solid var(--border-color); 
+            background: var(--bg-header); backdrop-filter: blur(10px);
+            display: flex; justify-content: space-between; align-items: center; padding: 0 20px; 
+            gap: 12px;
+        }
+
+        .footer-status-bar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--text-muted);
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .status-tag {
+            background: var(--glass-bg);
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .draft-item { 
+            padding: 9px 12px; background: var(--glass-bg); border: 1px solid var(--border-color); 
+            border-radius: 6px; margin-bottom: 8px; cursor: pointer; display: flex; 
+            justify-content: space-between; align-items: center; font-size: 13px; transition: 0.2s;
+        }
+        .draft-item:hover { background: var(--bg-card); }
+        .draft-item.active { border-left: 4px solid var(--accent-color); background: var(--bg-card); font-weight: bold; }
+
+        .floating-kb {
+            position: absolute; top: 70px; right: 30px; width: 340px; height: 380px;
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 10px; box-shadow: 0 10px 25px var(--shadow-color);
+            backdrop-filter: blur(16px); z-index: 50; display: flex; flex-direction: column;
+            resize: both; overflow: hidden; min-width: 250px; min-height: 200px;
+        }
+        .floating-kb-header {
+            padding: 8px 12px; background: var(--glass-bg); border-bottom: 1px solid var(--border-color);
+            cursor: move; user-select: none; display: flex; justify-content: space-between; align-items: center;
+            font-size: 13px; font-weight: bold;
+        }
+        .floating-kb-body {
+            flex: 1; padding: 10px; display: flex; flex-direction: column; gap: 8px; overflow: hidden;
+        }
+        .floating-kb-body select { width: 100%; }
+        .floating-kb-body textarea {
+            flex: 1; width: 100%; border: 1px solid var(--border-color); border-radius: 6px;
+            padding: 8px; font-size: 13px; line-height: 1.5; resize: none;
+            background: var(--editor-bg); color: var(--text-main); font-family: inherit; outline: none;
+        }
+        .floating-kb-body textarea:focus { border-color: var(--accent-color); }
+        .floating-kb-footer {
+            padding: 6px 10px; border-top: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center; background: var(--glass-bg);
+        }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: var(--bg-card); color: var(--text-main); padding: 24px; border-radius: 10px; width: 520px; max-width: 92%; border: 1px solid var(--border-color); box-shadow: 0 15px 30px rgba(0,0,0,0.3); backdrop-filter: blur(15px); max-height: 90vh; overflow-y: auto; }
+        .modal-title { font-size: 17px; font-weight: bold; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; font-size: 13px; color: var(--text-muted); }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--editor-bg); color: var(--text-main); font-size: 13px; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--accent-color); }
+
+        .preset-bar {
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .preset-select { flex: 1; min-width: 140px; }
+
+        /* 搜索匹配弹窗结果卡片样式 */
+        .search-result-item {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            background: var(--glass-bg);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .search-result-item:hover {
+            background: var(--bg-card);
+            border-color: var(--accent-color);
+            transform: translateX(2px);
+        }
+        .search-result-meta {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 4px;
+        }
+        .search-result-snippet {
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text-main);
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body data-theme="light" class="bg-style-mesh">
+
+    <!-- 动态背景渲染容器 + 鼠标悬停全屏流变模糊背景层 -->
+    <div class="ambient-wallpaper" id="wallpaper-engine">
+        <div class="shelf-global-bg-cover" id="shelf-global-bg-cover"></div>
+        <div class="mesh-blob blob-1 wallpaper-element"></div>
+        <div class="mesh-blob blob-2 wallpaper-element"></div>
+        <div class="mesh-blob blob-3 wallpaper-element"></div>
+        <div class="star-layer wallpaper-element"></div>
+        <div class="aurora-wave wallpaper-element"></div>
+    </div>
+
+    <!-- 顶栏 -->
+    <div class="header">
+        <div class="header-title">
+            <button class="btn btn-secondary" id="btn-back-shelf" style="display:none;" onclick="showBookshelf()">‹ 返回书柜</button>
+            <span id="header-book-title">📖 AI 小说翻译助手</span>
+            <button class="btn-icon" id="btn-edit-bookname" style="display:none;" onclick="renameCurrentBook()" title="修改书名">✏️</button>
+        </div>
+        <div class="header-actions">
+            <select class="select-control" id="bg-selector" onchange="switchBgStyle(this.value)" title="切换背景视觉特效">
+                <option value="bg-style-mesh">✨ 动态弥散光斑</option>
+                <option value="bg-style-starry">🌌 璀璨漫天星空</option>
+                <option value="bg-style-aurora-wave">🌀 几何极光流云</option>
+                <option value="bg-style-minimal">🎨 纯净极简渐变</option>
+                <option value="bg-style-grid">📐 极客点阵网格</option>
+            </select>
+
+            <select class="select-control" id="theme-selector" onchange="switchTheme(this.value)" title="切换主题配色方案">
+                <option value="light">☀️ 日间明亮 (Light Modern)</option>
+                <option value="emerald">🌲 墨绿夜间 (Deep Emerald)</option>
+                <option value="sakura">🌸 樱花浪漫粉 (Sakura Pink)</option>
+                <option value="coffee">☕ 复古咖啡 (Warm Coffee)</option>
+                <option value="aurora">💜 极光幻采紫 (Aurora Purple)</option>
+                <option value="deepsea">🌊 深海梦幻蓝 (Deep Sea Blue)</option>
+                <option value="cyberpunk">⚡ 赛博朋克霓虹 (Cyberpunk Neon)</option>
+                <option value="sunset">🌅 落日暖橘 (Sunset Orange)</option>
+                <option value="mint">🌿 薄荷清新 (Mint Breeze)</option>
+            </select>
+            <button class="btn btn-secondary" id="btn-toggle-float-kb" style="display:none;" onclick="toggleFloatKB()">📌 便签知识库</button>
+            <button class="btn btn-secondary" id="btn-export-vol" style="display:none;" onclick="openExportModal()">📥 导出该卷</button>
+            <button class="btn btn-secondary" onclick="openSettings()">⚙️ API & 预设管理</button>
+        </div>
+    </div>
+
+    <div class="view-container">
+        <!-- 1. 动态 3D 仿真书柜视图 -->
+        <div id="bookshelf-view">
+            <h2 class="shelf-header-title">我的精品创作书柜</h2>
+            <div class="shelf-container">
+                <div class="shelf-3d-wrapper">
+                    <div class="shelf" id="shelf-books"></div>
+                    <div class="shelf-plank"></div>
+                </div>
+            </div>
+
+            <!-- 统计打卡月历组件 -->
+            <div class="calendar-section">
+                <div class="calendar-header">
+                    <div class="calendar-title-group">
+                        <span class="calendar-title">📅 翻译字数打卡月历</span>
+                        <div class="wheel-picker-group">
+                            <span class="wheel-box" id="wheel-year" onwheel="handleCalendarWheel(event, 'year')" title="上下滚动滚轮切换年份">2026年 ▾</span>
+                            <span class="wheel-box" id="wheel-month" onwheel="handleCalendarWheel(event, 'month')" title="上下滚动滚轮切换月份">09月 ▾</span>
+                        </div>
+                    </div>
+                    <div class="calendar-legend">
+                        <span class="legend-item"><span class="legend-box" style="background:var(--cal-empty); border:1px solid var(--cal-border);"></span> 无</span>
+                        <span class="legend-item"><span class="legend-box" style="background:var(--cal-level-1);"></span> 1-3000字</span>
+                        <span class="legend-item"><span class="legend-box" style="background:var(--cal-level-2);"></span> 3001-6000字</span>
+                        <span class="legend-item"><span class="legend-box" style="background:var(--cal-level-3);"></span> 6000字+</span>
+                    </div>
+                </div>
+                <div class="calendar-grid-container" id="calendar-grid">
+                    <!-- 动态生成月历格子 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 工作台界面 (三栏编辑器 + 侧边栏) -->
+        <div id="workspace-view">
+            <!-- 侧边栏 -->
+            <div class="sidebar" id="sidebar-container">
+                <!-- 折叠/展开 切换按钮 -->
+                <button class="sidebar-toggle-btn" onclick="toggleSidebar()" id="sidebar-toggle-btn" title="收起/展开侧边栏">◀ 折叠</button>
+                
+                <div class="sidebar-uncollapse-bar" onclick="toggleSidebar()" title="点击展开侧边栏">
+                    <span>▶</span>
+                    <span class="sidebar-uncollapse-text">目录与设定</span>
+                </div>
+
+                <div class="sidebar-inner-content">
+                    <div class="sidebar-tabs">
+                        <button class="tab-btn active" id="tab-nav-chapters" onclick="switchSidebarTab('chapters')">卷章目录</button>
+                        <button class="tab-btn" id="tab-nav-drafts" onclick="switchSidebarTab('drafts')">知识库 / 设定集</button>
+                    </div>
+                    
+                    <div id="sidebar-chapters" class="sidebar-content">
+                        <button class="btn btn-primary" style="width:100%; margin-bottom: 12px;" onclick="addVolume()">+ 新建分卷</button>
+                        <div id="volume-tree"></div>
+                    </div>
+
+                    <div id="sidebar-drafts" class="sidebar-content" style="display: none;">
+                        <button class="btn btn-primary" style="width:100%; margin-bottom: 12px;" onclick="addDraftItem()">+ 新建设定条目</button>
+                        <div id="draft-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 编辑区 -->
+            <div class="editor-workspace">
+                <!-- 查找替换工具栏 -->
+                <div class="find-replace-bar" id="find-replace-bar">
+                    <span style="font-weight: bold; color: var(--text-muted);">查找:</span>
+                    <input type="text" id="find-text" placeholder="搜寻内容..." style="width: 130px;" onkeyup="if(event.key==='Enter') openSearchModal()">
+                    <span style="font-weight: bold; color: var(--text-muted);">替换:</span>
+                    <input type="text" id="replace-text" placeholder="替换文本..." style="width: 130px;">
+                    <span style="font-weight: bold; color: var(--text-muted);">范围:</span>
+                    <select id="search-scope" class="select-control" style="padding: 3px 6px;">
+                        <option value="chapter">本章节</option>
+                        <option value="book">全书</option>
+                    </select>
+                    <button class="btn btn-primary" style="padding: 3px 8px; font-size: 12px;" onclick="openSearchModal()">🔍 查找匹配项</button>
+                    <button class="btn btn-secondary" style="padding: 3px 8px; font-size: 12px;" onclick="executeReplace()">替换当前/下一处</button>
+                    <button class="btn btn-secondary" style="padding: 3px 8px; font-size: 12px;" onclick="executeReplaceAll()">全部替换</button>
+                    <span id="find-count-info" style="font-size: 12px; color: var(--text-muted); margin-left: 5px;"></span>
+                </div>
+
+                <!-- 三栏结构 (带可拖拽分割线) -->
+                <div id="panel-editor" class="three-column-container">
+                    <div class="column" id="col-1" style="flex: 1;">
+                        <div class="column-header">
+                            <span>1. 原文段落 (截取切片)</span>
+                            <button class="btn-icon" onclick="clearColumn('source')" title="清空原文">🗑️</button>
+                        </div>
+                        <textarea id="txt-source" placeholder="在此粘贴截取的小说原文片段..." oninput="updateWordCounts()"></textarea>
+                    </div>
+
+                    <div class="column-resizer" id="resizer-1"></div>
+
+                    <div class="column" id="col-2" style="flex: 1;">
+                        <div class="column-header">
+                            <span>2. AI 译文 (临时生成)</span>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <label style="font-size: 12px; cursor: pointer;" title="开启后AI生成时逐字显示"><input type="checkbox" id="chk-stream" checked> 🌊 流式输出</label>
+                                <button class="btn-icon" onclick="appendToTarget()" title="追加至成品栏">➡️ 追加到成品</button>
+                            </div>
+                        </div>
+                        <textarea id="txt-ai-target" placeholder="AI 翻译结果将自动生成回显在此..."></textarea>
+                    </div>
+
+                    <div class="column-resizer" id="resizer-2"></div>
+
+                    <div class="column" id="col-3" style="flex: 1;">
+                        <div class="column-header">
+                            <span>3. 本章最终成品 (保存存储)</span>
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <label style="font-size: 12px; cursor: pointer;" title="首行缩进2字符"><input type="checkbox" id="chk-indent" onchange="toggleFormatting()"> 缩进</label>
+                                <label style="font-size: 12px; cursor: pointer;" title="段落之间增加空行"><input type="checkbox" id="chk-spacing" onchange="toggleFormatting()"> 段空</label>
+                                <button class="btn-icon" onclick="saveCurrentChapter(true)" title="手动保存当前章">💾 保存成品</button>
+                            </div>
+                        </div>
+                        <div id="txt-final-preview" class="formatted-preview" contenteditable="true" placeholder="汇总并整理本章的最终译文成品..." oninput="syncFinalFromPreview()"></div>
+                    </div>
+                </div>
+
+                <!-- 参考知识点编辑 -->
+                <div id="panel-draft" class="three-column-container" style="display:none;">
+                    <div class="column" style="flex:1;">
+                        <div class="column-header">
+                            <span id="draft-title-display">设定/术语知识库 (该书专属)</span>
+                            <button class="btn-icon" onclick="saveCurrentDraft()">💾 保存条目内容</button>
+                        </div>
+                        <textarea id="txt-draft-content" placeholder="格式例：&#10;Arthur -> 亚瑟 (男主角)&#10;Winterfell -> 临冬城&#10;提示：本页面的所有设定在翻译时均会自动发送给 AI 作为上下文 Prompt 指导。"></textarea>
+                    </div>
+                </div>
+
+                <!-- 悬浮便签知识库窗口 -->
+                <div id="floating-kb-window" class="floating-kb" style="display: none;">
+                    <div class="floating-kb-header" id="floating-kb-header">
+                        <span>📌 便签知识库</span>
+                        <button class="btn-icon" onclick="toggleFloatKB()" style="padding: 0 4px;">✕</button>
+                    </div>
+                    <div class="floating-kb-body">
+                        <select id="float-kb-select" class="select-control" onchange="switchFloatKBDraft(this.value)"></select>
+                        <textarea id="float-kb-content" placeholder="设定条目内容..."></textarea>
+                    </div>
+                    <div class="floating-kb-footer">
+                        <button class="btn btn-secondary" style="padding: 2px 8px; font-size: 12px;" onclick="copyFloatKBContent()">📋 复制内容</button>
+                        <button class="btn btn-primary" style="padding: 2px 8px; font-size: 12px;" onclick="saveFloatKBContent()">💾 保存</button>
+                    </div>
+                </div>
+
+                <!-- 底部操作栏 -->
+                <div class="editor-footer">
+                    <div class="footer-status-bar">
+                        <span id="current-focus-title" style="font-weight: 600; color: var(--text-main);">未选择章节</span>
+                        <span class="status-tag" id="stat-final-words">✍️ 本章字数: 0</span>
+                        <span class="status-tag" id="stat-selected-words" style="color: var(--accent-color); font-weight: bold;">🔍 当前选中文字字数: 0</span>
+                        <span class="status-tag" id="stat-last-saved">🕒 上次保存: 未保存</span>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" id="btn-ai-translate" onclick="handleTranslateClick()">🚀 发送给 AI 翻译</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 查找匹配结果弹窗 -->
+    <div id="modal-search" class="modal">
+        <div class="modal-content" style="width: 650px;">
+            <div class="modal-title">
+                <span id="search-modal-header">🔍 关键词查找匹配列表</span>
+                <button class="btn-icon" onclick="closeModal('modal-search')">✕</button>
+            </div>
+            <div id="search-results-list" style="max-height: 60vh; overflow-y: auto; padding-right: 5px;"></div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                <button class="btn btn-secondary" onclick="closeModal('modal-search')">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- API 设置与 AI 设定预设组管理弹窗 -->
+    <div id="modal-settings" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">
+                <span>⚙️ API 配置与预设组管理</span>
+                <button class="btn-icon" onclick="closeModal('modal-settings')">✕</button>
+            </div>
+
+            <div class="preset-bar">
+                <span style="font-size:12px; font-weight:bold;">切换预设组:</span>
+                <select id="preset-selector" class="select-control preset-select" onchange="switchPreset(this.value)"></select>
+                <button class="btn btn-secondary" onclick="renameCurrentPreset()" title="修改预设名称">✏️</button>
+                <button class="btn btn-secondary" onclick="addNewPreset()" title="新建预设">＋</button>
+                <button class="btn btn-danger" onclick="deleteCurrentPreset()" title="删除预设">🗑️</button>
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                <button class="btn btn-secondary" style="flex: 1; font-size: 12px;" onclick="exportPresetsJSON()">📤 导出预设(JSON)</button>
+                <button class="btn btn-secondary" style="flex: 1; font-size: 12px;" onclick="triggerImportPresets()">📥 导入预设(JSON)</button>
+                <input type="file" id="file-import-presets" accept=".json" style="display:none;" onchange="importPresetsJSON(event)">
+            </div>
+
+            <hr style="border: none; border-top: 1px solid var(--border-color); margin-bottom: 15px;">
+
+            <div class="form-group">
+                <label>API 网址 (Endpoint):</label>
+                <input type="text" id="cfg-url" placeholder="https://api.openai.com/v1">
+            </div>
+            <div class="form-group">
+                <label>API 密钥 (API Key):</label>
+                <input type="password" id="cfg-key" placeholder="sk-...">
+            </div>
+            <div class="form-group">
+                <label>模型名称 (Model):</label>
+                <input type="text" id="cfg-model" placeholder="gpt-4o / deepseek-chat">
+            </div>
+            <div class="form-group">
+                <label>AI 前置角色身份设定 (System Persona):</label>
+                <textarea id="cfg-persona" rows="3" placeholder="例如：你是一位精通轻小说风格的资深翻译家，语言通俗生动，文笔优雅。"></textarea>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-secondary" onclick="closeModal('modal-settings')">取消</button>
+                <button class="btn btn-primary" onclick="saveSettings()">保存当前配置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导出设置弹窗 -->
+    <div id="modal-export" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">📥 导出当前卷文本文件</div>
+            <div class="form-group">
+                <label>选择导出的卷：</label>
+                <select id="export-vol-select"></select>
+            </div>
+            <div class="form-group">
+                <label>文本编码格式：</label>
+                <select id="export-encoding">
+                    <option value="UTF-8">UTF-8 (推荐, 跨平台通用)</option>
+                    <option value="GBK">ANSI / GBK (老旧电子书阅读器/Windows记事本)</option>
+                </select>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-secondary" onclick="closeModal('modal-export')">取消</button>
+                <button class="btn btn-primary" onclick="executeExport()">确认导出</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置书籍封面图弹窗 -->
+    <div id="modal-cover" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">🖼️ 设置书籍封面图</div>
+            <div class="form-group">
+                <label>方式一：输入图片 URL 链接：</label>
+                <input type="text" id="cover-url-input" placeholder="https://example.com/cover.jpg">
+            </div>
+            <div class="form-group">
+                <label>方式二：上传本地本地图片：</label>
+                <input type="file" id="cover-file-input" accept="image/*" onchange="handleCoverFileUpload(event)">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
+                <button class="btn btn-danger" onclick="removeBookCover()">清除封面</button>
+                <button class="btn btn-secondary" onclick="closeModal('modal-cover')">取消</button>
+                <button class="btn btn-primary" onclick="saveBookCover()">保存设置</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const defaultPresets = [
+            {
+                id: 'p_default',
+                name: '默认标准配置',
+                url: 'https://api.openai.com/v1',
+                key: '',
+                model: 'gpt-4o',
+                persona: '你是一位专业的小说翻译家，翻译流畅符合文学阅读习惯。'
+            }
+        ];
+
+        let store = {
+            books: JSON.parse(localStorage.getItem('nk_books') || '[]'),
+            presets: JSON.parse(localStorage.getItem('nk_presets') || JSON.stringify(defaultPresets)),
+            activePresetId: localStorage.getItem('nk_active_preset_id') || 'p_default',
+            theme: localStorage.getItem('nk_theme') || 'light',
+            bgStyle: localStorage.getItem('nk_bg_style') || 'bg-style-mesh',
+            dailyStats: JSON.parse(localStorage.getItem('nk_daily_stats') || '{}') // 日打卡统计记录 {"2026-09-26": 3200}
+        };
+
+        let currentBookId = null;
+        let currentVolId = null;
+        let currentChapterId = null;
+        let currentDraftId = null;
+        let targetCoverBookId = null; // 正在编辑封面的书籍ID
+        let activeTab = 'chapters';
+        
+        let currentRawFinalText = '';
+        let autoSaveTimer = null; // 成品自动保存防抖定时器
+        let translationAbortController = null; // AI翻译拦截控制器
+        let lastAutoSaveTimeStr = '未保存';
+
+        // 月历选中的年月变量
+        let calSelectedYear = new Date().getFullYear();
+        let calSelectedMonth = new Date().getMonth() + 1;
+
+        window.onload = () => {
+            if (!store.presets || store.presets.length === 0) {
+                store.presets = defaultPresets;
+                store.activePresetId = 'p_default';
+                saveStore('presets');
+                saveStore('active_preset_id');
+            }
+
+            switchTheme(store.theme);
+            switchBgStyle(store.bgStyle);
+
+            document.getElementById('theme-selector').value = store.theme;
+            document.getElementById('bg-selector').value = store.bgStyle;
+
+            // 监听全局划选文字事件，实时统计选中的编辑框文本字数
+            document.addEventListener('selectionchange', handleTextSelectionChange);
+
+            initDragFloatKB();
+            initColumnResizers();
+            renderBookshelf();
+            renderCalendar();
+        };
+
+        function saveStore(key) {
+            localStorage.setItem(`nk_${key}`, JSON.stringify(store[key]));
+        }
+
+        function switchTheme(themeName) {
+            store.theme = themeName;
+            document.body.setAttribute('data-theme', themeName);
+            localStorage.setItem('nk_theme', themeName);
+        }
+
+        function switchBgStyle(bgClass) {
+            store.bgStyle = bgClass;
+            document.body.className = bgClass;
+            localStorage.setItem('nk_bg_style', bgClass);
+        }
+
+        function getActivePreset() {
+            let preset = store.presets.find(p => p.id === store.activePresetId);
+            if (!preset && store.presets.length > 0) {
+                preset = store.presets[0];
+                store.activePresetId = preset.id;
+            }
+            return preset;
+        }
+
+        function populatePresetUI() {
+            const selector = document.getElementById('preset-selector');
+            selector.innerHTML = '';
+            store.presets.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.innerText = p.name;
+                if (p.id === store.activePresetId) opt.selected = true;
+                selector.appendChild(opt);
+            });
+
+            const activePreset = getActivePreset();
+            if (activePreset) {
+                document.getElementById('cfg-url').value = activePreset.url || '';
+                document.getElementById('cfg-key').value = activePreset.key || '';
+                document.getElementById('cfg-model').value = activePreset.model || '';
+                document.getElementById('cfg-persona').value = activePreset.persona || '';
+            }
+        }
+
+        function switchPreset(presetId) {
+            const cur = getActivePreset();
+            if (cur) {
+                cur.url = document.getElementById('cfg-url').value.trim();
+                cur.key = document.getElementById('cfg-key').value.trim();
+                cur.model = document.getElementById('cfg-model').value.trim();
+                cur.persona = document.getElementById('cfg-persona').value.trim();
+            }
+
+            store.activePresetId = presetId;
+            saveStore('active_preset_id');
+            saveStore('presets');
+            populatePresetUI();
+        }
+
+        function addNewPreset() {
+            const name = prompt("请输入新预设组名称：", "自定义配置组");
+            if (!name || !name.trim()) return;
+            const newPreset = {
+                id: 'p_' + Date.now(),
+                name: name.trim(),
+                url: 'https://api.openai.com/v1',
+                key: '',
+                model: 'gpt-4o',
+                persona: '你是一位专业的小说翻译家。'
+            };
+            store.presets.push(newPreset);
+            store.activePresetId = newPreset.id;
+            saveStore('presets');
+            saveStore('active_preset_id');
+            populatePresetUI();
+        }
+
+        function renameCurrentPreset() {
+            const preset = getActivePreset();
+            if (!preset) return;
+            const newName = prompt("修改预设组名称：", preset.name);
+            if (newName && newName.trim()) {
+                preset.name = newName.trim();
+                saveStore('presets');
+                populatePresetUI();
+            }
+        }
+
+        function deleteCurrentPreset() {
+            if (store.presets.length <= 1) {
+                return alert("至少保留一个预设配置组！");
+            }
+            const preset = getActivePreset();
+            if (confirm(`确定要删除预设组《${preset.name}》吗？`)) {
+                store.presets = store.presets.filter(p => p.id !== preset.id);
+                store.activePresetId = store.presets[0].id;
+                saveStore('presets');
+                saveStore('active_preset_id');
+                populatePresetUI();
+            }
+        }
+
+        function exportPresetsJSON() {
+            const dataStr = JSON.stringify(store.presets, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `AI_Translation_Presets_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        }
+
+        function triggerImportPresets() {
+            document.getElementById('file-import-presets').click();
+        }
+
+        function importPresetsJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported) && imported.length > 0 && imported[0].name) {
+                        if (confirm(`确认导入 ${imported.length} 个预设组？这将合并到现有的预设中。`)) {
+                            imported.forEach(p => {
+                                p.id = 'p_' + Date.now() + Math.floor(Math.random()*1000);
+                                store.presets.push(p);
+                            });
+                            store.activePresetId = imported[0].id;
+                            saveStore('presets');
+                            saveStore('active_preset_id');
+                            populatePresetUI();
+                            alert("预设组导入成功！");
+                        }
+                    } else {
+                        alert("导入失败：JSON 格式不符合预设模板规则。");
+                    }
+                } catch (err) {
+                    alert("解析 JSON 文件失败: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function openSettings() {
+            populatePresetUI();
+            document.getElementById('modal-settings').style.display = 'flex';
+        }
+
+        function saveSettings() {
+            const activePreset = getActivePreset();
+            if (activePreset) {
+                activePreset.url = document.getElementById('cfg-url').value.trim();
+                activePreset.key = document.getElementById('cfg-key').value.trim();
+                activePreset.model = document.getElementById('cfg-model').value.trim();
+                activePreset.persona = document.getElementById('cfg-persona').value.trim();
+                saveStore('presets');
+            }
+            closeModal('modal-settings');
+        }
+
+        /* --- 侧边栏整体展开/挂起收起逻辑 --- */
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar-container');
+            const btn = document.getElementById('sidebar-toggle-btn');
+            const isCollapsed = sidebar.classList.toggle('collapsed');
+            
+            if (isCollapsed) {
+                btn.innerText = '▶';
+            } else {
+                btn.innerText = '◀ 折叠';
+            }
+        }
+
+        /* --- 计算书籍成品总字数 --- */
+        function calculateBookTotalWords(book) {
+            if (!book || !book.volumes) return 0;
+            let total = 0;
+            book.volumes.forEach(v => {
+                if (v.chapters) {
+                    v.chapters.forEach(c => {
+                        total += (c.final || '').length;
+                    });
+                }
+            });
+            return total;
+        }
+
+        /* --- 3. 拟真 3D 书柜管理、封面设置与悬浮动态动画 --- */
+        function renderBookshelf() {
+            const shelf = document.getElementById('shelf-books');
+            shelf.innerHTML = '';
+
+            store.books.forEach(book => {
+                const totalWords = calculateBookTotalWords(book);
+                const bookWrap = document.createElement('div');
+                bookWrap.className = 'book-wrapper';
+
+                const card = document.createElement('div');
+                card.className = 'book-card-3d';
+                card.onclick = () => openBook(book.id);
+
+                // 鼠标悬停切入动态低不透明度放大背景图特效
+                card.onmouseenter = () => {
+                    if (book.cover) {
+                        const globalCover = document.getElementById('shelf-global-bg-cover');
+                        globalCover.style.backgroundImage = `url('${book.cover}')`;
+                        globalCover.classList.add('active');
+                    }
+                };
+                card.onmouseleave = () => {
+                    const globalCover = document.getElementById('shelf-global-bg-cover');
+                    globalCover.classList.remove('active');
+                };
+
+                const coverHtml = book.cover ? `<img src="${book.cover}" class="book-cover-img" alt="封面">` : '';
+
+                card.innerHTML = `
+                    ${coverHtml}
+                    <div class="book-spine-3d"></div>
+                    <div class="book-shading"></div>
+                    <div class="book-actions-overlay">
+                        <button class="action-btn-mini" onclick="event.stopPropagation(); openCoverModal('${book.id}')" title="设置封面图">🖼️</button>
+                        <button class="action-btn-mini" onclick="event.stopPropagation(); renameBook('${book.id}')" title="修改书名">✏️</button>
+                        <button class="action-btn-mini" onclick="event.stopPropagation(); deleteBook('${book.id}')" title="删除书籍">🗑️</button>
+                    </div>
+                    <div class="book-content-layer">
+                        <div class="book-title">${book.title}</div>
+                        <div class="book-meta">${book.volumes ? book.volumes.length : 0} 卷</div>
+                    </div>
+                `;
+
+                const wordBadge = document.createElement('div');
+                wordBadge.className = 'book-word-count-badge';
+                wordBadge.innerText = `${totalWords}字`;
+
+                bookWrap.appendChild(card);
+                bookWrap.appendChild(wordBadge);
+                shelf.appendChild(bookWrap);
+            });
+
+            const addCard = document.createElement('div');
+            addCard.className = 'add-book-card';
+            addCard.onclick = createBook;
+            addCard.innerHTML = `<span style="font-size:32px; font-weight:300;">+</span><span>新建书籍</span>`;
+            shelf.appendChild(addCard);
+        }
+
+        /* 封面图弹窗与设定保存 */
+        function openCoverModal(bookId) {
+            targetCoverBookId = bookId;
+            const book = store.books.find(b => b.id === bookId);
+            document.getElementById('cover-url-input').value = (book && book.cover) ? book.cover : '';
+            document.getElementById('cover-file-input').value = '';
+            document.getElementById('modal-cover').style.display = 'flex';
+        }
+
+        function handleCoverFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('cover-url-input').value = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function saveBookCover() {
+            if (!targetCoverBookId) return;
+            const book = store.books.find(b => b.id === targetCoverBookId);
+            if (book) {
+                const coverVal = document.getElementById('cover-url-input').value.trim();
+                book.cover = coverVal;
+                saveStore('books');
+                renderBookshelf();
+            }
+            closeModal('modal-cover');
+        }
+
+        function removeBookCover() {
+            if (!targetCoverBookId) return;
+            const book = store.books.find(b => b.id === targetCoverBookId);
+            if (book) {
+                delete book.cover;
+                saveStore('books');
+                renderBookshelf();
+            }
+            closeModal('modal-cover');
+        }
+
+        function createBook() {
+            const title = prompt("请输入新书名：", "未命名小说");
+            if (!title) return;
+            const newBook = {
+                id: 'b_' + Date.now(),
+                title: title,
+                volumes: [{ id: 'v_' + Date.now(), title: '第一卷', collapsed: false, chapters: [{ id: 'c_' + Date.now(), title: '第一章', source: '', target: '', final: '' }] }],
+                drafts: [{ id: 'd_' + Date.now(), title: '主要角色设定', content: '' }]
+            };
+            store.books.push(newBook);
+            saveStore('books');
+            renderBookshelf();
+        }
+
+        function renameBook(bookId) {
+            const book = store.books.find(b => b.id === bookId);
+            if (!book) return;
+            const newName = prompt("修改书名：", book.title);
+            if (newName && newName.trim()) {
+                book.title = newName.trim();
+                saveStore('books');
+                renderBookshelf();
+                if (currentBookId === bookId) {
+                    document.getElementById('header-book-title').innerText = `📖 ${book.title}`;
+                }
+            }
+        }
+
+        function renameCurrentBook() {
+            if (currentBookId) renameBook(currentBookId);
+        }
+
+        function deleteBook(bookId) {
+            const book = store.books.find(b => b.id === bookId);
+            if (!book) return;
+            if (confirm(`确认要删除书籍《${book.title}》及其所有章节和设定吗？`)) {
+                store.books = store.books.filter(b => b.id !== bookId);
+                saveStore('books');
+                renderBookshelf();
+            }
+        }
+
+        function openBook(bookId) {
+            currentBookId = bookId;
+            const book = store.books.find(b => b.id === bookId);
+            document.getElementById('header-book-title').innerText = `📖 ${book.title}`;
+            document.getElementById('btn-back-shelf').style.display = 'inline-flex';
+            document.getElementById('btn-edit-bookname').style.display = 'inline-flex';
+            document.getElementById('btn-export-vol').style.display = 'inline-flex';
+            document.getElementById('btn-toggle-float-kb').style.display = 'inline-flex';
+            
+            document.getElementById('bookshelf-view').style.display = 'none';
+            document.getElementById('workspace-view').style.display = 'flex';
+
+            renderVolumeTree();
+            renderDraftList();
+            populateFloatKBSelect();
+
+            if (book.volumes.length > 0 && book.volumes[0].chapters.length > 0) {
+                selectChapter(book.volumes[0].id, book.volumes[0].chapters[0].id);
+            }
+        }
+
+        function showBookshelf() {
+            saveCurrentChapter(false); // 静默自动保存当前章节
+            document.getElementById('bookshelf-view').style.display = 'flex';
+            document.getElementById('workspace-view').style.display = 'none';
+            document.getElementById('btn-back-shelf').style.display = 'none';
+            document.getElementById('btn-edit-bookname').style.display = 'none';
+            document.getElementById('btn-export-vol').style.display = 'none';
+            document.getElementById('btn-toggle-float-kb').style.display = 'none';
+            document.getElementById('floating-kb-window').style.display = 'none';
+            document.getElementById('header-book-title').innerText = '📖 AI 小说翻译助手';
+            renderBookshelf();
+            renderCalendar();
+        }
+
+        /* --- 4. 统计月历（滚轮万年历 + 打卡热力图） --- */
+        function handleCalendarWheel(event, type) {
+            event.preventDefault();
+            if (type === 'year') {
+                if (event.deltaY < 0) calSelectedYear++;
+                else calSelectedYear--;
+            } else if (type === 'month') {
+                if (event.deltaY < 0) {
+                    calSelectedMonth++;
+                    if (calSelectedMonth > 12) { calSelectedMonth = 1; calSelectedYear++; }
+                } else {
+                    calSelectedMonth--;
+                    if (calSelectedMonth < 1) { calSelectedMonth = 12; calSelectedYear--; }
+                }
+            }
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            document.getElementById('wheel-year').innerText = `${calSelectedYear}年 ▾`;
+            document.getElementById('wheel-month').innerText = `${String(calSelectedMonth).padStart(2, '0')}月 ▾`;
+
+            const container = document.getElementById('calendar-grid');
+            container.innerHTML = '';
+
+            // 星期表头
+            const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+            weekDays.forEach(w => {
+                const header = document.createElement('div');
+                header.className = 'cal-weekday';
+                header.innerText = w;
+                container.appendChild(header);
+            });
+
+            // 获取该月1号与总天数
+            const firstDay = new Date(calSelectedYear, calSelectedMonth - 1, 1);
+            const startingDay = firstDay.getDay(); // 0 是周日
+            const daysInMonth = new Date(calSelectedYear, calSelectedMonth, 0).getDate();
+
+            // 上个月补充空位
+            const prevMonthDays = new Date(calSelectedYear, calSelectedMonth - 1, 0).getDate();
+            for (let i = startingDay - 1; i >= 0; i--) {
+                const cell = document.createElement('div');
+                cell.className = 'cal-day-cell other-month';
+                cell.innerHTML = `<span class="day-num">${prevMonthDays - i}</span>`;
+                container.appendChild(cell);
+            }
+
+            const todayObj = new Date();
+            const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
+
+            // 渲染本月日期
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateKey = `${calSelectedYear}-${String(calSelectedMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const wordCount = store.dailyStats[dateKey] || 0;
+
+                const cell = document.createElement('div');
+                cell.className = 'cal-day-cell';
+
+                if (dateKey === todayStr) {
+                    cell.classList.add('today');
+                }
+
+                let colorLevelClass = '';
+                if (wordCount >= 1 && wordCount <= 3000) {
+                    colorLevelClass = 'lvl-1';
+                } else if (wordCount > 3000 && wordCount <= 6000) {
+                    colorLevelClass = 'lvl-2';
+                } else if (wordCount > 6000) {
+                    colorLevelClass = 'lvl-3';
+                }
+
+                if (colorLevelClass) cell.classList.add(colorLevelClass);
+
+                const cntDisplay = wordCount > 0 ? (wordCount > 9999 ? (wordCount/10000).toFixed(1)+'w' : wordCount) : '';
+                cell.innerHTML = `<span class="day-num">${day}</span>${cntDisplay ? `<span class="word-cnt">${cntDisplay}</span>` : ''}`;
+                cell.title = `${dateKey}: 翻译成品 ${wordCount} 字`;
+
+                container.appendChild(cell);
+            }
+        }
+
+        /* 记录今日翻译新增字数逻辑 */
+        function recordDailyTranslationWords(addedCount) {
+            if (addedCount <= 0) return;
+            const todayObj = new Date();
+            const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
+            
+            store.dailyStats[todayStr] = (store.dailyStats[todayStr] || 0) + addedCount;
+            saveStore('daily_stats');
+            renderCalendar();
+        }
+
+        /* --- 5. 卷章树形管理 (支持每卷独立折叠展开) --- */
+        function toggleVolumeFold(e, volId) {
+            e.stopPropagation();
+            const book = store.books.find(b => b.id === currentBookId);
+            if (!book) return;
+            const vol = book.volumes.find(v => v.id === volId);
+            if (vol) {
+                vol.collapsed = !vol.collapsed;
+                saveStore('books');
+                renderVolumeTree();
+            }
+        }
+
+        function renderVolumeTree() {
+            const container = document.getElementById('volume-tree');
+            container.innerHTML = '';
+            const book = store.books.find(b => b.id === currentBookId);
+            if (!book) return;
+
+            book.volumes.forEach(vol => {
+                const volBox = document.createElement('div');
+                const isCollapsed = !!vol.collapsed;
+                
+                const volHeader = document.createElement('div');
+                volHeader.className = 'vol-header';
+                volHeader.onclick = (e) => toggleVolumeFold(e, vol.id);
+                volHeader.innerHTML = `
+                    <div class="vol-title-text">
+                        <span class="vol-toggle-icon ${isCollapsed ? 'collapsed' : ''}">▼</span>
+                        <span>📁 ${vol.title}</span>
+                    </div>
+                    <div>
+                        <button class="btn-icon" onclick="renameVol(event, '${vol.id}')" title="重命名卷">✏️</button>
+                        <button class="btn-icon" onclick="addChapter(event, '${vol.id}')" title="新增章">＋</button>
+                        <button class="btn-icon" onclick="deleteVol(event, '${vol.id}')" title="删除卷">🗑️</button>
+                    </div>
+                `;
+                
+                const chList = document.createElement('ul');
+                chList.className = `chapter-list ${isCollapsed ? 'collapsed' : ''}`;
+
+                vol.chapters.forEach(ch => {
+                    const li = document.createElement('li');
+                    li.className = `chapter-item ${ch.id === currentChapterId && activeTab === 'chapters' ? 'active' : ''}`;
+                    li.innerHTML = `
+                        <span>📄 ${ch.title}</span>
+                        <div>
+                            <button class="btn-icon" onclick="renameChapter(event, '${vol.id}', '${ch.id}')" title="重命名章">✏️</button>
+                            <button class="btn-icon" onclick="deleteChapter(event, '${vol.id}', '${ch.id}')" title="删除章">🗑️</button>
+                        </div>
+                    `;
+                    li.onclick = (e) => {
+                        e.stopPropagation();
+                        selectChapter(vol.id, ch.id);
+                    };
+                    chList.appendChild(li);
+                });
+
+                volBox.appendChild(volHeader);
+                volBox.appendChild(chList);
+                container.appendChild(volBox);
+            });
+        }
+
+        function addVolume() {
+            const book = store.books.find(b => b.id === currentBookId);
+            const title = prompt("请输入新分卷名称：", `第 ${book.volumes.length + 1} 卷`);
+            if (!title) return;
+            book.volumes.push({
+                id: 'v_' + Date.now(),
+                title: title,
+                collapsed: false,
+                chapters: []
+            });
+            saveStore('books');
+            renderVolumeTree();
+        }
+
+        function renameVol(e, volId) {
+            e.stopPropagation();
+            const book = store.books.find(b => b.id === currentBookId);
+            const vol = book.volumes.find(v => v.id === volId);
+            const name = prompt("重命名卷：", vol.title);
+            if (name) { vol.title = name; saveStore('books'); renderVolumeTree(); }
+        }
+
+        function deleteVol(e, volId) {
+            e.stopPropagation();
+            const book = store.books.find(b => b.id === currentBookId);
+            const vol = book.volumes.find(v => v.id === volId);
+            if (!vol) return;
+            if (confirm(`确定要删除分卷《${vol.title}》及其包含的所有章节吗？`)) {
+                book.volumes = book.volumes.filter(v => v.id !== volId);
+                saveStore('books');
+                if (currentVolId === volId) {
+                    currentVolId = null;
+                    currentChapterId = null;
+                    document.getElementById('txt-source').value = '';
+                    document.getElementById('txt-ai-target').value = '';
+                    currentRawFinalText = '';
+                    renderFormattedFinal();
+                    updateFocusTitle();
+                }
+                renderVolumeTree();
+            }
+        }
+
+        function addChapter(e, volId) {
+            e.stopPropagation();
+            const book = store.books.find(b => b.id === currentBookId);
+            const vol = book.volumes.find(v => v.id === volId);
+            vol.collapsed = false;
+            const title = prompt("请输入新章节名称：", `第 ${vol.chapters.length + 1} 章`);
+            if (!title) return;
+            const newCh = { id: 'c_' + Date.now(), title, source: '', target: '', final: '' };
+            vol.chapters.push(newCh);
+            saveStore('books');
+            renderVolumeTree();
+            selectChapter(volId, newCh.id);
+        }
+
+        function renameChapter(e, volId, chId) {
+            e.stopPropagation();
+            const book = store.books.find(b => b.id === currentBookId);
+            const vol = book.volumes.find(v => v.id === volId);
+            const ch = vol.chapters.find(c => c.id === chId);
+            const name = prompt("重命名章：", ch.title);
+            if (name) { ch.title = name; saveStore('books'); renderVolumeTree(); updateFocusTitle(); }
+        }
+
+        function deleteChapter(e, volId, chId) {
+            e.stopPropagation();
+            const book = store.books.find(b => b.id === currentBookId);
+            const vol = book.volumes.find(v => v.id === volId);
+            if (!vol) return;
+            const ch = vol.chapters.find(c => c.id === chId);
+            if (!ch) return;
+            if (confirm(`确定要删除章节《${ch.title}》吗？`)) {
+                vol.chapters = vol.chapters.filter(c => c.id !== chId);
+                saveStore('books');
+                if (currentChapterId === chId) {
+                    currentChapterId = null;
+                    document.getElementById('txt-source').value = '';
+                    document.getElementById('txt-ai-target').value = '';
+                    currentRawFinalText = '';
+                    renderFormattedFinal();
+                    updateFocusTitle();
+                }
+                renderVolumeTree();
+            }
+        }
+
+        function selectChapter(volId, chId) {
+            // 切换章前先静默保存原先编辑的成品栏及原文
+            saveCurrentChapter(false);
+
+            currentVolId = volId;
+            currentChapterId = chId;
+            const book = store.books.find(b => b.id === currentBookId);
+            const vol = book.volumes.find(v => v.id === volId);
+            const ch = vol.chapters.find(c => c.id === chId);
+
+            document.getElementById('txt-source').value = ch.source || '';
+            document.getElementById('txt-ai-target').value = ch.target || '';
+            currentRawFinalText = ch.final || '';
+
+            renderFormattedFinal();
+            updateFocusTitle();
+            updateWordCounts();
+            renderVolumeTree();
+        }
+
+        function updateFocusTitle() {
+            const book = store.books.find(b => b.id === currentBookId);
+            if (!book) return;
+            const vol = book.volumes.find(v => v.id === currentVolId);
+            const ch = vol ? vol.chapters.find(c => c.id === currentChapterId) : null;
+            document.getElementById('current-focus-title').innerText = ch ? `当前编辑：${vol.title} > ${ch.title}` : '未选择章节';
+        }
+
+        /* --- 6. 知识库/草稿箱管理 --- */
+        function renderDraftList() {
+            const container = document.getElementById('draft-list');
+            container.innerHTML = '';
+            const book = store.books.find(b => b.id === currentBookId);
+            if (!book) return;
+
+            book.drafts.forEach(d => {
+                const item = document.createElement('div');
+                item.className = `draft-item ${d.id === currentDraftId && activeTab === 'drafts' ? 'active' : ''}`;
+                item.innerHTML = `
+                    <span>📌 ${d.title}</span>
+                    <div>
+                        <button class="btn-icon" onclick="renameDraftItem(event, '${d.id}')" title="重命名知识库条目">✏️</button>
+                        <button class="btn-icon" onclick="deleteDraftItem(event, '${d.id}')" title="删除知识库条目">🗑️</button>
+                    </div>
+                `;
+                item.onclick = () => selectDraft(d.id);
+                container.appendChild(item);
+            });
+        }
+
+        function addDraftItem() {
+            const book = store.books.find(b => b.id === currentBookId);
+            const title = prompt("新增知识库/设定分类名称：", "角色人名对照表");
+            if (!title) return;
+            const newDraft = { id: 'd_' + Date.now(), title, content: '' };
+            book.drafts.push(newDraft);
+            saveStore('books');
+            renderDraftList();
+            populateFloatKBSelect();
+            selectDraft(newDraft.id);
+        }
+
+        function renameDraftItem(e, draftId) {
+            e.stopPropagation();
+            const book = store.books.find(b => b.id === currentBookId);
+            const draft = book.drafts.find(d => d.id === draftId);
+            if (!draft) return;
+            const newName = prompt("重命名该设定条目：", draft.title);
+            if (newName && newName.trim()) {
+                draft.title = newName.trim();
+                saveStore('books');
+                renderDraftList();
+                populateFloatKBSelect();
+                if (currentDraftId === draftId) {
+                    document.getElementById('draft-title-display').innerText = `设定/知识库: ${draft.title}`;
+                }
+            }
+        }
+
+        function deleteDraftItem(e, draftId) {
+            e.stopPropagation();
+            const book = store.books.find(b => b.id === currentBookId);
+            const draft = book.drafts.find(d => d.id === draftId);
+            if (!draft) return;
+            if (confirm(`确定要删除知识库条目《${draft.title}》吗？`)) {
+                book.drafts = book.drafts.filter(d => d.id !== draftId);
+                saveStore('books');
+                if (currentDraftId === draftId) {
+                    currentDraftId = null;
+                    document.getElementById('txt-draft-content').value = '';
+                    document.getElementById('draft-title-display').innerText = '设定/术语知识库';
+                }
+                renderDraftList();
+                populateFloatKBSelect();
+            }
+        }
+
+        function selectDraft(draftId) {
+            currentDraftId = draftId;
+            const book = store.books.find(b => b.id === currentBookId);
+            const d = book.drafts.find(item => item.id === draftId);
+            document.getElementById('txt-draft-content').value = d ? d.content || '' : '';
+            document.getElementById('draft-title-display').innerText = d ? `设定/知识库: ${d.title}` : '设定/术语知识库';
+            renderDraftList();
+        }
+
+        function switchSidebarTab(tab) {
+            activeTab = tab;
+            document.getElementById('tab-nav-chapters').classList.toggle('active', tab === 'chapters');
+            document.getElementById('tab-nav-drafts').classList.toggle('active', tab === 'drafts');
+            
+            document.getElementById('sidebar-chapters').style.display = tab === 'chapters' ? 'block' : 'none';
+            document.getElementById('sidebar-drafts').style.display = tab === 'drafts' ? 'block' : 'none';
+
+            document.getElementById('panel-editor').style.display = tab === 'chapters' ? 'flex' : 'none';
+            document.getElementById('panel-draft').style.display = tab === 'drafts' ? 'flex' : 'none';
+            document.getElementById('find-replace-bar').style.display = tab === 'chapters' ? 'flex' : 'none';
+            document.getElementById('btn-ai-translate').style.display = tab === 'chapters' ? 'inline-block' : 'none';
+
+            if (tab === 'drafts') {
+                const book = store.books.find(b => b.id === currentBookId);
+                if (book && book.drafts.length > 0 && !currentDraftId) selectDraft(book.drafts[0].id);
+            }
+        }
+
+        /* --- 7. 编辑保存与操作 (修改：实时统计选中的编辑框文本字数) --- */
+        function handleTextSelectionChange() {
+            const activeElem = document.activeElement;
+            const selection = window.getSelection();
+            let selectedText = "";
+
+            if (activeElem && (activeElem.tagName === 'TEXTAREA' || activeElem.tagName === 'INPUT')) {
+                const start = activeElem.selectionStart;
+                const end = activeElem.selectionEnd;
+                if (typeof start === 'number' && typeof end === 'number') {
+                    selectedText = activeElem.value.substring(start, end);
+                }
+            } else if (selection && !selection.isCollapsed) {
+                selectedText = selection.toString();
+            }
+
+            document.getElementById('stat-selected-words').innerText = `🔍 当前选中文字字数: ${selectedText.length}`;
+        }
+
+        function updateWordCounts() {
+            const finalLen = (currentRawFinalText || '').length;
+            document.getElementById('stat-final-words').innerText = `✍️ 本章字数: ${finalLen}`;
+        }
+
+        function updateSaveTimeTag() {
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            lastAutoSaveTimeStr = timeStr;
+            document.getElementById('stat-last-saved').innerText = `🕒 上次保存: ${timeStr}`;
+        }
+
+        function saveCurrentChapter(showAlert = false) {
+            if (!currentChapterId) return;
+            const book = store.books.find(b => b.id === currentBookId);
+            if (!book) return;
+            const vol = book.volumes.find(v => v.id === currentVolId);
+            if (!vol) return;
+            const ch = vol.chapters.find(c => c.id === currentChapterId);
+            if (!ch) return;
+
+            ch.source = document.getElementById('txt-source').value;
+            ch.target = document.getElementById('txt-ai-target').value;
+            ch.final = currentRawFinalText;
+
+            saveStore('books');
+            updateSaveTimeTag();
+            if (showAlert) alert("本章内容已成功保存！");
+        }
+
+        function triggerAutoSave() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                saveCurrentChapter(false);
+            }, 500); // 500毫秒防抖自动保存
+        }
+
+        function saveCurrentDraft() {
+            if (!currentDraftId) return;
+            const book = store.books.find(b => b.id === currentBookId);
+            const d = book.drafts.find(item => item.id === currentDraftId);
+            if (d) {
+                d.content = document.getElementById('txt-draft-content').value;
+                saveStore('books');
+                alert("知识库设定条目已保存！");
+            }
+        }
+
+        function clearColumn(type) {
+            if (type === 'source') {
+                document.getElementById('txt-source').value = '';
+                updateWordCounts();
+            }
+        }
+
+        function appendToTarget() {
+            const aiText = document.getElementById('txt-ai-target').value;
+            if (!aiText) return;
+            currentRawFinalText = currentRawFinalText ? currentRawFinalText + '\n\n' + aiText : aiText;
+            renderFormattedFinal();
+            updateWordCounts();
+            recordDailyTranslationWords(aiText.length); // 记录翻译打卡热力图字数
+            triggerAutoSave();
+        }
+
+        /* --- 三栏宽度自由拖拽调整功能 --- */
+        function initColumnResizers() {
+            const container = document.getElementById('panel-editor');
+            const col1 = document.getElementById('col-1');
+            const col2 = document.getElementById('col-2');
+            const col3 = document.getElementById('col-3');
+            const resizer1 = document.getElementById('resizer-1');
+            const resizer2 = document.getElementById('resizer-2');
+
+            let activeResizer = null;
+            let startX = 0;
+            let startCol1Width = 0, startCol2Width = 0, startCol3Width = 0;
+
+            resizer1.addEventListener('mousedown', (e) => startResize(e, resizer1));
+            resizer2.addEventListener('mousedown', (e) => startResize(e, resizer2));
+
+            function startResize(e, resizer) {
+                activeResizer = resizer;
+                startX = e.clientX;
+                startCol1Width = col1.getBoundingClientRect().width;
+                startCol2Width = col2.getBoundingClientRect().width;
+                startCol3Width = col3.getBoundingClientRect().width;
+
+                resizer.classList.add('resizing');
+                document.addEventListener('mousemove', doResize);
+                document.addEventListener('mouseup', stopResize);
+            }
+
+            function doResize(e) {
+                if (!activeResizer) return;
+                const deltaX = e.clientX - startX;
+
+                if (activeResizer === resizer1) {
+                    const newWidth1 = Math.max(140, startCol1Width + deltaX);
+                    const newWidth2 = Math.max(140, startCol2Width - deltaX);
+                    col1.style.flex = `0 0 ${newWidth1}px`;
+                    col2.style.flex = `0 0 ${newWidth2}px`;
+                } else if (activeResizer === resizer2) {
+                    const newWidth2 = Math.max(140, startCol2Width + deltaX);
+                    const newWidth3 = Math.max(140, startCol3Width - deltaX);
+                    col2.style.flex = `0 0 ${newWidth2}px`;
+                    col3.style.flex = `0 0 ${newWidth3}px`;
+                }
+            }
+
+            function stopResize() {
+                if (activeResizer) {
+                    activeResizer.classList.remove('resizing');
+                    activeResizer = null;
+                }
+                document.removeEventListener('mousemove', doResize);
+                document.removeEventListener('mouseup', stopResize);
+            }
+        }
+
+        /* --- 8. 排版与高亮渲染 Engine (成品分栏) --- */
+        function syncFinalFromPreview() {
+            const preview = document.getElementById('txt-final-preview');
+            currentRawFinalText = preview.innerText;
+            updateWordCounts();
+            triggerAutoSave();
+        }
+
+        function toggleFormatting() {
+            const preview = document.getElementById('txt-final-preview');
+            const isIndent = document.getElementById('chk-indent').checked;
+            const isSpacing = document.getElementById('chk-spacing').checked;
+
+            preview.classList.toggle('indent-active', isIndent);
+            preview.classList.toggle('spacing-active', isSpacing);
+        }
+
+        function escapeHTML(text) {
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function renderFormattedFinal() {
+            const preview = document.getElementById('txt-final-preview');
+            const findVal = document.getElementById('find-text').value;
+
+            let textToRender = currentRawFinalText;
+
+            if (findVal) {
+                const escapeReg = findVal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const reg = new RegExp(escapeReg, 'gi');
+                textToRender = escapeHTML(textToRender).replace(reg, match => `<mark class="search-highlight">${match}</mark>`);
+                
+                const paragraphs = textToRender.split('\n');
+                preview.innerHTML = paragraphs.map(p => p.trim() === '' ? '<p class="empty-para"><br></p>' : `<p>${p}</p>`).join('');
+            } else {
+                const paragraphs = textToRender.split('\n');
+                preview.innerHTML = paragraphs.map(p => p.trim() === '' ? '<p class="empty-para"><br></p>' : `<p>${escapeHTML(p)}</p>`).join('');
+            }
+
+            toggleFormatting();
+        }
+
+        /* --- 9. 全书/本章 弹出式匹配查找与跳转定位 --- */
+        function openSearchModal() {
+            const findText = document.getElementById('find-text').value.trim();
+            if (!findText) return alert("请输入要查找的关键词！");
+
+            const scope = document.getElementById('search-scope').value;
+            const resultsContainer = document.getElementById('search-results-list');
+            resultsContainer.innerHTML = '';
+
+            const book = store.books.find(b => b.id === currentBookId);
+            if (!book) return;
+
+            let results = [];
+            const escapeReg = findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const reg = new RegExp(escapeReg, 'gi');
+
+            function searchInChapter(vol, ch) {
+                const content = ch.final || '';
+                if (!content) return;
+                const lines = content.split('\n');
+                lines.forEach((line, index) => {
+                    if (reg.test(line)) {
+                        const highlightedSnippet = escapeHTML(line).replace(reg, match => `<mark class="search-highlight">${match}</mark>`);
+                        results.push({
+                            volId: vol.id,
+                            volTitle: vol.title,
+                            chId: ch.id,
+                            chTitle: ch.title,
+                            snippet: highlightedSnippet,
+                            lineNum: index + 1
+                        });
+                    }
+                });
+            }
+
+            if (scope === 'chapter') {
+                const vol = book.volumes.find(v => v.id === currentVolId);
+                const ch = vol ? vol.chapters.find(c => c.id === currentChapterId) : null;
+                if (vol && ch) searchInChapter(vol, ch);
+            } else {
+                book.volumes.forEach(v => {
+                    v.chapters.forEach(c => {
+                        searchInChapter(v, c);
+                    });
+                });
+            }
+
+            document.getElementById('search-modal-header').innerText = `🔍 匹配关键词“${findText}”的结果 (共 ${results.length} 条)`;
+
+            if (results.length === 0) {
+                resultsContainer.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--text-muted);">未找到任何匹配的内容</div>';
+            } else {
+                results.forEach(res => {
+                    const div = document.createElement('div');
+                    div.className = 'search-result-item';
+                    div.innerHTML = `
+                        <div class="search-result-meta">📍 ${res.volTitle} > ${res.chTitle} (第 ${res.lineNum} 行)</div>
+                        <div class="search-result-snippet">${res.snippet}</div>
+                    `;
+                    div.onclick = () => {
+                        closeModal('modal-search');
+                        selectChapter(res.volId, res.chId);
+                    };
+                    resultsContainer.appendChild(div);
+                });
+            }
+
+            document.getElementById('modal-search').style.display = 'flex';
+        }
+
+        function executeReplace() {
+            const findText = document.getElementById('find-text').value;
+            const replaceText = document.getElementById('replace-text').value;
+            if (!findText) return;
+
+            const scope = document.getElementById('search-scope').value;
+            const escapeReg = findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+            if (scope === 'chapter') {
+                const reg = new RegExp(escapeReg, 'i');
+                if (reg.test(currentRawFinalText)) {
+                    currentRawFinalText = currentRawFinalText.replace(reg, replaceText);
+                    renderFormattedFinal();
+                    updateWordCounts();
+                    triggerAutoSave();
+                }
+            } else {
+                const book = store.books.find(b => b.id === currentBookId);
+                let replaced = false;
+
+                const reg = new RegExp(escapeReg, 'i');
+                if (reg.test(currentRawFinalText)) {
+                    currentRawFinalText = currentRawFinalText.replace(reg, replaceText);
+                    replaced = true;
+                } else if (book) {
+                    for (let v of book.volumes) {
+                        for (let c of v.chapters) {
+                            if (c.final && reg.test(c.final)) {
+                                c.final = c.final.replace(reg, replaceText);
+                                replaced = true;
+                                break;
+                            }
+                        }
+                        if (replaced) break;
+                    }
+                }
+                if (replaced) {
+                    saveStore('books');
+                    renderFormattedFinal();
+                    updateWordCounts();
+                }
+            }
+        }
+
+        function executeReplaceAll() {
+            const findText = document.getElementById('find-text').value;
+            const replaceText = document.getElementById('replace-text').value;
+            if (!findText) return;
+
+            const scope = document.getElementById('search-scope').value;
+            const escapeReg = findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const reg = new RegExp(escapeReg, 'gi');
+
+            if (scope === 'chapter') {
+                currentRawFinalText = currentRawFinalText.replace(reg, replaceText);
+            } else {
+                const book = store.books.find(b => b.id === currentBookId);
+                if (book) {
+                    book.volumes.forEach(v => {
+                        v.chapters.forEach(c => {
+                            if (c.final) {
+                                c.final = c.final.replace(reg, replaceText);
+                            }
+                        });
+                    });
+                }
+                currentRawFinalText = currentRawFinalText.replace(reg, replaceText);
+                saveStore('books');
+            }
+
+            renderFormattedFinal();
+            updateWordCounts();
+            triggerAutoSave();
+        }
+
+        /* --- 10. 悬浮便签知识库组件 --- */
+        function toggleFloatKB() {
+            const win = document.getElementById('floating-kb-window');
+            if (win.style.display === 'none' || !win.style.display) {
+                win.style.display = 'flex';
+                populateFloatKBSelect();
+            } else {
+                win.style.display = 'none';
+            }
+        }
+
+        function populateFloatKBSelect() {
+            const select = document.getElementById('float-kb-select');
+            select.innerHTML = '';
+            const book = store.books.find(b => b.id === currentBookId);
+            if (!book) return;
+
+            book.drafts.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.id;
+                opt.innerText = d.title;
+                select.appendChild(opt);
+            });
+
+            if (book.drafts.length > 0) {
+                switchFloatKBDraft(book.drafts[0].id);
+            }
+        }
+
+        function switchFloatKBDraft(draftId) {
+            const book = store.books.find(b => b.id === currentBookId);
+            if (!book) return;
+            const d = book.drafts.find(item => item.id === draftId);
+            document.getElementById('float-kb-content').value = d ? d.content || '' : '';
+        }
+
+        function saveFloatKBContent() {
+            const draftId = document.getElementById('float-kb-select').value;
+            const content = document.getElementById('float-kb-content').value;
+            const book = store.books.find(b => b.id === currentBookId);
+            if (!book) return;
+            const d = book.drafts.find(item => item.id === draftId);
+            if (d) {
+                d.content = content;
+                saveStore('books');
+                if (currentDraftId === draftId) {
+                    document.getElementById('txt-draft-content').value = content;
+                }
+                alert("悬浮便签知识库内容已保存！");
+            }
+        }
+
+        function copyFloatKBContent() {
+            const content = document.getElementById('float-kb-content').value;
+            navigator.clipboard.writeText(content).then(() => {
+                alert("设定内容已成功复制到剪贴板！");
+            });
+        }
+
+        function initDragFloatKB() {
+            const win = document.getElementById('floating-kb-window');
+            const header = document.getElementById('floating-kb-header');
+            let isDragging = false;
+            let offsetX = 0, offsetY = 0;
+
+            header.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                offsetX = e.clientX - win.offsetLeft;
+                offsetY = e.clientY - win.offsetTop;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                win.style.left = (e.clientX - offsetX) + 'px';
+                win.style.top = (e.clientY - offsetY) + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+        }
+
+        /* --- 11. AI 接口翻译请求 (包含流式传输控制与强拦截) --- */
+        function handleTranslateClick() {
+            if (translationAbortController) {
+                translationAbortController.abort();
+                translationAbortController = null;
+                setTranslateButtonState(false);
+                document.getElementById('txt-ai-target').value += "\n\n[用户已中断翻译]";
+            } else {
+                translateSlice();
+            }
+        }
+
+        function setTranslateButtonState(isTranslating) {
+            const btn = document.getElementById('btn-ai-translate');
+            if (isTranslating) {
+                btn.className = "btn btn-warning";
+                btn.innerText = "⏳ 翻译中... (点击终止)";
+            } else {
+                btn.className = "btn btn-primary";
+                btn.innerText = "🚀 发送给 AI 翻译";
+            }
+        }
+
+        async function translateSlice() {
+            const sourceText = document.getElementById('txt-source').value.trim();
+            if (!sourceText) return alert("请先在第一栏输入或粘贴原文段落！");
+
+            const activePreset = getActivePreset();
+            if (!activePreset || !activePreset.key) return alert("请先在设置中选择预设并配置 API Key！");
+
+            const book = store.books.find(b => b.id === currentBookId);
+            const knowledgeBase = book.drafts.map(d => `[${d.title}]\n${d.content}`).join('\n\n');
+            const persona = activePreset.persona || "你是一位专业的小说翻译家。";
+            
+            const systemPrompt = `${persona}
+
+【翻译原则与知识库设定约束】
+在翻译时，请严格遵守以下专有名词对照及背景设定：
+${knowledgeBase || "（暂无特殊参考设定）"}
+
+请直接输出高质量译文，保持文学美感，不要回复多余的解释。`;
+
+            const aiTargetArea = document.getElementById('txt-ai-target');
+            const isStream = document.getElementById('chk-stream').checked;
+
+            aiTargetArea.value = isStream ? "" : "AI 正在思考翻译中...";
+            setTranslateButtonState(true);
+
+            translationAbortController = new AbortController();
+
+            try {
+                let baseUrl = activePreset.url.replace(/\/+$/, "");
+                if (!baseUrl.endsWith('/v1')) baseUrl += '/v1';
+
+                const response = await fetch(`${baseUrl}/chat/completions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${activePreset.key}`
+                    },
+                    body: JSON.stringify({
+                        model: activePreset.model || 'gpt-4o',
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: sourceText }
+                        ],
+                        temperature: 0.3,
+                        stream: isStream
+                    }),
+                    signal: translationAbortController.signal
+                });
+
+                if (!response.ok) throw new Error(`请求失败，状态码: ${response.status}`);
+
+                if (isStream) {
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder("utf-8");
+                    let done = false;
+
+                    while (!done) {
+                        const { value, done: doneReading } = await reader.read();
+                        done = doneReading;
+                        const chunkValue = decoder.decode(value, { stream: !done });
+                        
+                        const lines = chunkValue.split('\n');
+                        for (let line of lines) {
+                            if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+                                try {
+                                    const json = JSON.parse(line.substring(6));
+                                    const token = json.choices[0]?.delta?.content || '';
+                                    aiTargetArea.value += token;
+                                    aiTargetArea.scrollTop = aiTargetArea.scrollHeight;
+                                } catch (e) {}
+                            }
+                        }
+                    }
+                } else {
+                    const data = await response.json();
+                    aiTargetArea.value = data.choices[0].message.content;
+                }
+
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    console.log("翻译已被终止");
+                } else {
+                    alert("翻译失败: " + err.message);
+                    aiTargetArea.value = "翻译发生错误，请检查 API 配置。";
+                }
+            } finally {
+                translationAbortController = null;
+                setTranslateButtonState(false);
+            }
+        }
+
+        /* --- 12. 弹窗导出与文本文件构建 --- */
+        function openExportModal() {
+            const book = store.books.find(b => b.id === currentBookId);
+            const select = document.getElementById('export-vol-select');
+            select.innerHTML = '';
+            book.volumes.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.id;
+                opt.innerText = v.title;
+                select.appendChild(opt);
+            });
+            document.getElementById('modal-export').style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        function executeExport() {
+            const volId = document.getElementById('export-vol-select').value;
+            const encoding = document.getElementById('export-encoding').value;
+            const book = store.books.find(b => b.id === currentBookId);
+            const vol = book.volumes.find(v => v.id === volId);
+
+            let content = `${book.title} - ${vol.title}\n\n`;
+            vol.chapters.forEach(ch => {
+                content += `=== ${ch.title} ===\n\n${ch.final || ch.target || ''}\n\n`;
+            });
+
+            let blob;
+            if (encoding === 'GBK') {
+                const unicodeArray = Encoding.stringToCode(content);
+                const gbkArray = Encoding.convert(unicodeArray, { to: 'GBK', from: 'UNICODE' });
+                blob = new Blob([new Uint8Array(gbkArray)], { type: 'text/plain;choice=ansi' });
+            } else {
+                blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            }
+
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${book.title}_${vol.title}.txt`;
+            a.click();
+            closeModal('modal-export');
+        }
+    </script>
+</body>
+</html>
